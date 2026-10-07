@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ระบบบริหารจัดการยิม (Iron Factory Gym)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body{font-family:'Sarabun',sans-serif;background:#F3F4F6}
+.hd{display:none!important}
+.hero{background:linear-gradient(to right,rgba(29,35,42,.92),rgba(29,35,42,.5)),url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop') center/cover}
+.mhero{background:linear-gradient(to right,rgba(20,83,45,.92),rgba(20,83,45,.6)),url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=1470&auto=format&fit=crop') center/cover}
+.inp{width:100%;border:1px solid #d1d5db;border-radius:.5rem;padding:.5rem .75rem;font-size:.875rem;background:#f9fafb;outline:none}
+.inp:focus{border-color:#475569;box-shadow:0 0 0 2px #cbd5e1}
+.btn{background:#1e293b;color:#fff;padding:.5rem 1rem;border-radius:.5rem;font-size:.875rem;font-weight:600}
+.btn:hover{background:#334155}
+.btn2{border:1px solid #cbd5e1;padding:.4rem .8rem;border-radius:.5rem;font-size:.8rem;background:#fff}
+.btn2:disabled{opacity:.4}
+th,td{padding:.7rem 1rem}.tw{overflow-x:auto}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:.75rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+</style>
+</head>
+<body class="text-gray-800">
+
+<!-- LOGIN -->
+<div id="login" class="fixed inset-0 bg-slate-900 z-40 flex items-center justify-center p-4 overflow-y-auto">
+ <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+  <div class="bg-slate-800 p-6 text-center text-white"><i class="fa-solid fa-dumbbell text-4xl mb-2 text-amber-500"></i><h2 class="text-2xl font-bold">IRON FACTORY GYM</h2><p class="text-sm text-gray-300">แข็งแรงขึ้นในแบบของคุณ</p></div>
+  <div class="p-8">
+   <div id="ltabs" class="flex mb-6 bg-gray-100 rounded-lg p-1"><button id="tm" onclick="setMode('member')" class="flex-1 py-2 rounded-md text-sm">สมาชิกยิม</button><button id="ts" onclick="setMode('staff')" class="flex-1 py-2 rounded-md text-sm">พนักงาน / แอดมิน</button></div>
+   <div id="fl" class="space-y-4">
+    <div><label id="lul" class="block text-sm font-medium mb-1"></label><input id="lu" class="inp" onkeydown="if(event.key==='Enter')$('lp').focus()"></div>
+    <div><label class="block text-sm font-medium mb-1">รหัสผ่าน</label><input id="lp" type="password" class="inp" onkeydown="if(event.key==='Enter')login()"></div>
+    <button onclick="login()" class="btn w-full py-3">เข้าสู่ระบบ</button>
+    <div id="reglink" class="text-center text-sm"><span class="text-gray-500">ยังไม่มีบัญชี?</span> <button onclick="regForm(true)" class="font-bold hover:underline">สมัครสมาชิก</button><p class="text-xs text-gray-400 mt-2">ลืมรหัสผ่าน? ติดต่อพนักงานเพื่อรีเซ็ตรหัสผ่าน</p></div>
+   </div>
+   <div id="fr" class="space-y-3 hd">
+    <h3 id="regh" class="font-bold text-lg border-b pb-2"></h3>
+    <div><label class="block text-xs mb-1">ชื่อ-นามสกุล</label><input id="rn" class="inp"></div>
+    <div><label class="block text-xs mb-1">เบอร์โทรศัพท์ 10 หลัก (ใช้เป็น Username)</label><input id="rp" inputmode="numeric" maxlength="10" class="inp"></div>
+    <div><label class="block text-xs mb-1">ตั้งรหัสผ่าน (อย่างน้อย 4 ตัว)</label><input id="rw" type="password" class="inp"></div>
+    <div><label class="block text-xs mb-1">แพ็กเกจแรกเข้า</label><select id="rk" class="inp"></select></div>
+    <div class="flex gap-2 pt-1"><button onclick="regForm(false)" class="btn2 flex-1">ยกเลิก</button><button onclick="register()" class="btn flex-1">ยืนยันสมัคร</button></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ADMIN -->
+<div id="app" class="hd flex h-screen overflow-hidden">
+ <aside id="sb" class="bg-[#2F363A] text-gray-300 w-60 shrink-0 hidden md:flex flex-col">
+  <div class="p-5 border-b border-gray-700"><div class="text-xl font-bold text-white flex items-center gap-3"><i class="fa-solid fa-dumbbell"></i>Iron Factory Gym</div><p class="text-[10px] text-gray-400 mt-1">แข็งแรงขึ้นในแบบของคุณ</p></div>
+  <nav id="nav" class="flex-1 py-4 space-y-1 overflow-y-auto"></nav>
+  <div class="px-4 py-3 border-t border-gray-700 text-[10px] text-center text-gray-500">© 2026 Iron Factory Gym</div>
+ </aside>
+ <div class="flex-1 flex flex-col overflow-hidden">
+  <header class="bg-white shadow-sm h-14 flex items-center justify-between px-4 gap-3">
+   <button onclick="toggleSb()" class="md:hidden text-gray-600"><i class="fa-solid fa-bars text-xl"></i></button>
+   <div class="flex items-center bg-gray-100 rounded-full px-4 py-1.5 flex-1 max-w-md"><i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i><input id="gs" oninput="Q=this.value;go('members')" placeholder="ค้นหาสมาชิก..." class="bg-transparent outline-none ml-2 text-sm w-full"></div>
+   <div class="flex items-center gap-4">
+    <button onclick="go('reports')" class="relative text-gray-500" title="สลิปรออนุมัติ"><i class="fa-regular fa-bell text-lg"></i><span id="bell" class="hd absolute -top-1 -right-2 bg-red-500 text-white text-[10px] rounded-full px-1.5"></span></button>
+    <span id="uname" class="text-sm font-medium hidden md:block"></span>
+    <button onclick="logout(true)" class="text-xs bg-red-500 text-white px-3 py-1.5 rounded-lg"><i class="fa-solid fa-right-from-bracket"></i> ออก</button>
+   </div>
+  </header>
+  <main id="main" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4"></main>
+ </div>
+</div>
+
+<!-- MEMBER -->
+<div id="mem" class="hd min-h-screen bg-gray-50"></div>
+
+<!-- MODAL -->
+<div id="modal" class="hd fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4"><div id="mbx" class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden"></div></div>
+
+<script>
+const $=i=>document.getElementById(i),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// แฮชรหัสผ่าน (ระดับเดโม ฝั่งเบราว์เซอร์) - ใช้งานจริงควร hash ฝั่งเซิร์ฟเวอร์ด้วย bcrypt/argon2
+const H=p=>{const s='iron$'+p;let a=3735928559,b=1103547991;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^a>>>16,2246822507)^Math.imul(b^b>>>13,3266489909);b=Math.imul(b^b>>>16,2246822507)^Math.imul(a^a>>>13,3266489909);return(4294967296*(2097151&b)+(a>>>0)).toString(16)};
+const L=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>iso(new Date()),endOf=s=>new Date(s+'T23:59:59');
+const expired=s=>!s||endOf(s)<new Date(),left=s=>Math.ceil((endOf(s)-new Date())/864e5);
+const fD=s=>new Date(s+'T00:00:00').toLocaleDateString('th-TH'),fT=t=>new Date(t).toLocaleString('th-TH'),fM=n=>'฿'+Number(n).toLocaleString();
+const nid=(a,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x.id).slice(p.length))||0))+1).padStart(n,'0');
+const F=(l,h)=>`<div><label class="block text-xs mb-1">${l}</label>${h}</div>`;
+const K={m:'members',p:'packages',s:'staff',c:'checkins',t:'tx',cfg:'cfg'};
+const DEF={members:[],packages:[{id:'P001',name:'รายวัน',price:80,duration:1},{id:'P002',name:'รายเดือน 30 วัน',price:1200,duration:30},{id:'P003',name:'รายปี 365 วัน',price:10000,duration:365}],staff:[],checkins:[],tx:[],cfg:{nd:30,rd:10,acct:'นาย เอกชัย กุษาเดช'}};
+const S={};for(const k in K)S[K[k]]=L('ig_'+k,DEF[K[k]]);
+if(!S.staff.length)S.staff=[{u:'admin',p:H('123456'),name:'ผู้ดูแลระบบ',role:'Admin'}];
+if(localStorage.getItem('ig_m')===null){
+ const old=L('iron_members',null);
+ if(old)S.members=old.map(m=>({id:m.id,name:m.name,phone:m.phone,p:H(m.password||m.phone),pkg:m.package,expiry:m.expiry>'1971'?m.expiry:'',status:'active'}));
+ else{const d=new Date();d.setDate(d.getDate()+30);S.members=[{id:'M001',name:'สมชาย ใจดี',phone:'0812345678',p:H('1234'),pkg:'รายเดือน 30 วัน',expiry:iso(d),status:'active'}]}
+}
+function save(){try{for(const k in K)localStorage['ig_'+k]=JSON.stringify(S[K[k]])}catch{alert('พื้นที่จัดเก็บเต็ม กรุณา Backup แล้วล้างข้อมูลเก่า')}}
+save();
+let U=L('ig_sess',null),mode='member',PAY=null,Q='',cur='dashboard',pg={m:1,t:1},PS=10,RF={f:today().slice(0,8)+'01',t:today()};
+const adm=()=>U?.t==='staff'&&S.staff.find(s=>s.u===U.id)?.role==='Admin';
+const rate=m=>S.tx.some(t=>t.mid===m.id&&t.status==='paid')?S.cfg.rd:S.cfg.nd;
+const st=m=>m.status==='suspended'?['ระงับ','gray']:!m.expiry?['ยังไม่มีแพ็กเกจ','gray']:expired(m.expiry)?['หมดอายุ','red']:left(m.expiry)<=3?['ใกล้หมดอายุ','amber']:['ปกติ','green'];
+const badge=(t,c)=>`<span class="px-2 py-0.5 rounded-full text-xs bg-${c}-100 text-${c}-700 whitespace-nowrap">${t}</span>`;
+const TS={paid:['ชำระแล้ว','green'],pending:['รอตรวจสลิป','amber'],rejected:['ปฏิเสธ','red']};
+const pageOf=(a,k)=>a.slice((pg[k]-1)*PS,pg[k]*PS);
+const pager=(n,k,f)=>{const p=Math.max(1,Math.ceil(n/PS));return p>1?`<div class="flex justify-center items-center gap-3 text-sm"><button class="btn2" ${pg[k]<=1?'disabled':''} onclick="pg.${k}--;${f}()">‹</button>${pg[k]}/${p}<button class="btn2" ${pg[k]>=p?'disabled':''} onclick="pg.${k}++;${f}()">›</button></div>`:''};
+const empty=n=>`<tr><td colspan="${n}" class="text-center text-gray-400">ไม่มีข้อมูล</td></tr>`;
+const modal=(t,b,f)=>{$('mbx').innerHTML=`<div class="p-4 border-b bg-slate-800 text-white flex justify-between"><h3 class="font-bold">${t}</h3><button onclick="closeM()"><i class="fa-solid fa-xmark"></i></button></div><div class="p-5 space-y-3 max-h-[70vh] overflow-y-auto">${b}</div>${f?`<div class="p-3 bg-gray-50 border-t flex justify-end gap-2">${f}</div>`:''}`;$('modal').classList.remove('hd')};
+const closeM=()=>$('modal').classList.add('hd');
+const cancelB='<button class="btn2" onclick="closeM()">ยกเลิก</button>';
+const commit=()=>{save();refresh()};
+function refresh(){if(U?.t==='staff')go(cur);else if(U)renderMember();updBell()}
+function updBell(){const n=S.tx.filter(t=>t.status==='pending').length;$('bell').textContent=n;$('bell').classList.toggle('hd',!n)}
+function dload(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click()}
+
+// ---------- LOGIN ----------
+function setMode(m){mode=m;const on='flex-1 py-2 rounded-md text-sm bg-white shadow font-bold',off='flex-1 py-2 rounded-md text-sm text-gray-500';$('tm').className=m==='member'?on:off;$('ts').className=m==='staff'?on:off;$('lul').textContent=m==='member'?'เบอร์โทรศัพท์':'ชื่อผู้ใช้งาน (Username)';$('reglink').classList.toggle('hd',m!=='member');regForm(false)}
+function regForm(on){$('fl').classList.toggle('hd',on);$('fr').classList.toggle('hd',!on);$('ltabs').classList.toggle('hd',on);if(on){$('regh').textContent=`สร้างบัญชีสมาชิกใหม่ (ลด ${S.cfg.nd}%)`;$('rk').innerHTML='<option value="">-- ยังไม่เลือกแพ็กเกจ --</option>'+S.packages.map(p=>`<option value="${p.id}">${esc(p.name)} (${fM(p.price)} → ${fM(p.price*(100-S.cfg.nd)/100)})</option>`).join('')}}
+function addMember(name,phone,pass,exceptId){
+ if(!name)return alert('กรุณากรอกชื่อ'),null;
+ if(!/^0\d{9}$/.test(phone))return alert('เบอร์โทรต้องเป็นตัวเลข 10 หลักขึ้นต้นด้วย 0'),null;
+ if(S.members.some(m=>m.phone===phone&&m.id!==exceptId))return alert('เบอร์โทรนี้ถูกใช้งานแล้ว'),null;
+ if(pass.length<4&&(pass||!exceptId))return alert('รหัสผ่านต้องมีอย่างน้อย 4 ตัว'),null;
+ if(exceptId)return true;
+ const m={id:nid(S.members,'M',3),name,phone,p:H(pass),pkg:'',expiry:'',status:'active'};S.members.push(m);return m}
+function register(){const m=addMember($('rn').value.trim(),$('rp').value.trim(),$('rw').value);if(!m)return;save();const pid=$('rk').value;regForm(false);$('lu').value=m.phone;$('lp').value='';
+ if(pid){U=null;openPay(m.id,pid)}else alert('สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ')}
+function login(){const u=$('lu').value.trim(),pw=$('lp').value;if(!u||!pw)return alert('กรุณากรอกข้อมูลให้ครบ');
+ if(mode==='staff'){const s=S.staff.find(x=>x.u===u&&x.p===H(pw));if(!s)return alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');U={t:'staff',id:s.u}}
+ else{const m=S.members.find(x=>x.phone===u&&x.p===H(pw));if(!m)return alert('เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง');U={t:'member',id:m.id}}
+ localStorage.ig_sess=JSON.stringify(U);$('lp').value='';boot()}
+function logout(ask){if(ask&&!confirm('ต้องการออกจากระบบใช่หรือไม่?'))return;U=null;localStorage.removeItem('ig_sess');['app','mem'].forEach(i=>$(i).classList.add('hd'));$('login').classList.remove('hd');setMode('member')}
+function boot(){
+ if(U?.t==='staff'&&!S.staff.some(s=>s.u===U.id))U=null;
+ if(U?.t==='member'&&!S.members.some(m=>m.id===U.id))U=null;
+ if(!U)return logout();
+ $('login').classList.add('hd');
+ if(U.t==='staff'){const s=S.staff.find(x=>x.u===U.id);$('app').classList.remove('hd');$('mem').classList.add('hd');$('uname').textContent=`${s.name} (${s.role})`;
+  $('nav').innerHTML=NAV.filter(n=>!n[3]||adm()).map(n=>`<a href="#" onclick="go('${n[0]}');return false" data-t="${n[0]}" class="nl flex items-center gap-3 px-6 py-2.5 hover:bg-white/10"><i class="fa-solid ${n[1]} w-5"></i>${n[2]}</a>`).join('');go('dashboard')}
+ else{$('app').classList.add('hd');$('mem').classList.remove('hd');renderMember()}
+ updBell()}
+const NAV=[['dashboard','fa-house','หน้าหลัก'],['members','fa-user-group','ข้อมูลสมาชิก'],['checkin','fa-calendar-check','เช็คอิน'],['packages','fa-layer-group','จัดการแพ็กเกจ',1],['reports','fa-chart-pie','การเงิน / อนุมัติสลิป'],['settings','fa-gear','ตั้งค่าระบบ',1]];
+function toggleSb(){['hidden','flex','fixed','z-30','h-full'].forEach(c=>$('sb').classList.toggle(c))}
+function go(t){if(['packages','settings'].includes(t)&&!adm())t='dashboard';cur=t;
+ document.querySelectorAll('.nl').forEach(a=>a.classList.toggle('bg-white/10',a.dataset.t===t));
+ if(window.innerWidth<768&&$('sb').classList.contains('fixed'))toggleSb();R[t]();updBell()}
+
+// ---------- ADMIN TABS ----------
+const R={
+dashboard(){
+ const td=today(),tc=S.checkins.filter(c=>c.d===td),pend=S.tx.filter(t=>t.status==='pending').length,rev=S.tx.filter(t=>t.status==='paid').reduce((s,t)=>s+t.price,0);
+ const exp=S.members.filter(m=>m.status!=='suspended'&&m.expiry&&left(m.expiry)<=7&&left(m.expiry)>-30).sort((a,b)=>a.expiry>b.expiry?1:-1);
+ main.innerHTML=`<div class="hero rounded-xl p-8 text-white"><p>ยินดีต้อนรับสู่</p><h1 class="text-4xl font-bold mb-2">Iron Factory Gym</h1><p class="text-gray-300 mb-4 font-light">ลูกค้าใหม่ลด ${S.cfg.nd}% | ลูกค้าเก่าต่ออายุลด ${S.cfg.rd}%</p><button onclick="go('checkin')" class="bg-white text-slate-900 px-5 py-2 rounded-full font-medium">เช็คอินสมาชิก</button></div>
+ <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="card p-4"><p class="text-xs text-gray-500">สมาชิกทั้งหมด</p><p class="text-2xl font-bold">${S.members.length} คน</p></div>
+  <div class="card p-4"><p class="text-xs text-gray-500">ใช้บริการวันนี้</p><p class="text-2xl font-bold">${tc.length} ครั้ง</p></div>
+  <div class="card p-4"><p class="text-xs text-gray-500">รายได้รวม (ชำระแล้ว)</p><p class="text-2xl font-bold text-green-700">${fM(rev)}</p></div>
+  <div class="card p-4 cursor-pointer" onclick="go('reports')"><p class="text-xs text-gray-500">สลิปรออนุมัติ</p><p class="text-2xl font-bold ${pend?'text-amber-600':''}">${pend} รายการ</p></div></div>
+ <div class="grid lg:grid-cols-2 gap-4">
+  <div class="card p-5"><h3 class="font-bold mb-3">เช็คอินวันนี้</h3><div class="space-y-2 text-sm">${tc.slice(0,6).map(c=>`<div class="flex justify-between border-b pb-1"><span class="text-gray-500">${c.tm}</span><span>${esc(c.name)}</span></div>`).join('')||'<p class="text-gray-400 text-center">ยังไม่มีผู้มาใช้บริการ</p>'}</div></div>
+  <div class="card p-5"><h3 class="font-bold mb-3">ใกล้หมดอายุ / เพิ่งหมดอายุ</h3><div class="space-y-2 text-sm">${exp.slice(0,8).map(m=>`<div class="flex justify-between items-center border-b pb-1"><span>${esc(m.name)} <span class="text-gray-400">${esc(m.phone)}</span></span><span>${expired(m.expiry)?badge('หมดอายุ','red'):badge('เหลือ '+left(m.expiry)+' วัน','amber')} <button class="btn2" onclick="renew('${m.id}')">ต่ออายุ</button></span></div>`).join('')||'<p class="text-gray-400 text-center">ไม่มีรายการ</p>'}</div></div></div>`},
+
+members(){main.innerHTML=`<div class="card p-4 flex flex-wrap gap-2 justify-between"><input id="q" value="${esc(Q)}" oninput="Q=this.value;pg.m=1;rm()" placeholder="ค้นหาชื่อ, เบอร์โทร, รหัส..." class="inp max-w-xs"><button class="btn" onclick="memForm()"><i class="fa-solid fa-plus"></i> เพิ่มสมาชิกใหม่</button></div>
+ <div class="card tw"><table class="w-full text-left text-sm"><thead class="bg-gray-50 text-gray-600"><tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>เบอร์โทร</th><th>แพ็กเกจ</th><th>หมดอายุ</th><th>สถานะ</th><th class="text-center">จัดการ</th></tr></thead><tbody id="mb" class="divide-y"></tbody></table></div><div id="pgm"></div>`;rm()},
+
+checkin(){main.innerHTML=`<div class="card p-6 max-w-xl mx-auto text-center"><h2 class="font-bold text-xl mb-3">ตารางการใช้บริการ / เช็คอิน</h2><div class="flex gap-2"><input id="ci" onkeydown="if(event.key==='Enter')doCI()" class="inp" placeholder="รหัสสมาชิก หรือ เบอร์โทร"><button class="btn" onclick="doCI()">Check-in</button></div><div id="cir" class="mt-4 text-left"></div></div>
+ <div class="card p-5 tw"><h3 class="font-bold mb-3">ประวัติเข้าใช้งานวันนี้</h3><table class="w-full text-left text-sm"><thead class="bg-gray-50"><tr><th>เวลา</th><th>รหัส</th><th>ชื่อ</th></tr></thead><tbody id="cl" class="divide-y"></tbody></table></div>`;rcl();$('ci').focus()},
+
+packages(){main.innerHTML=`<div class="card p-4 flex justify-between items-center"><h3 class="font-bold text-lg">รายการแพ็กเกจ</h3><button class="btn" onclick="pkgForm()"><i class="fa-solid fa-plus"></i> เพิ่มแพ็กเกจ</button></div><div class="grid md:grid-cols-3 gap-4">${S.packages.map(p=>`<div class="card p-5"><h4 class="font-bold text-lg">${esc(p.name)}</h4><p class="text-2xl font-bold text-slate-700">${fM(p.price)}</p><p class="text-xs text-gray-500">ระยะเวลา ${p.duration} วัน · ใช้อยู่ ${S.members.filter(m=>m.pkg===p.name).length} คน</p><div class="mt-3 flex gap-2"><button class="btn2" onclick="pkgForm('${p.id}')">แก้ไข</button><button class="btn2 text-red-600" onclick="delPkg('${p.id}')">ลบ</button></div></div>`).join('')}</div>`},
+
+reports(){const p=S.tx.filter(t=>t.status==='pending');
+ main.innerHTML=`${p.length?`<div class="bg-amber-50 border border-amber-300 rounded-xl p-4"><h3 class="font-bold text-amber-800 mb-2">รอตรวจสลิป (${p.length})</h3>${p.map(t=>`<div class="flex flex-wrap items-center justify-between gap-2 border-t border-amber-200 py-2 text-sm"><span>${fT(t.t)} · ${esc(t.name)} · ${esc(t.pkg)} · <b>${fM(t.price)}</b></span><span class="space-x-1"><button class="btn2" onclick="slipV('${t.id}')">ดูสลิป</button><button class="btn" onclick="appr('${t.id}',1)">อนุมัติ</button><button class="btn2 text-red-600" onclick="appr('${t.id}',0)">ปฏิเสธ</button></span></div>`).join('')}</div>`:''}
+ <div class="card p-4 flex flex-wrap gap-3 items-end"><div><label class="text-xs">ตั้งแต่</label><input type="date" class="inp" value="${RF.f}" onchange="RF.f=this.value;pg.t=1;rr()"></div><div><label class="text-xs">ถึง</label><input type="date" class="inp" value="${RF.t}" onchange="RF.t=this.value;pg.t=1;rr()"></div><button class="btn" onclick="csv()"><i class="fa-solid fa-file-csv"></i> ส่งออก CSV</button></div>
+ <div id="sum" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+ <div class="card tw"><table class="w-full text-left text-sm"><thead class="bg-gray-50 text-gray-600"><tr><th>เลขที่</th><th>วันที่/เวลา</th><th>สมาชิก</th><th>แพ็กเกจ</th><th>ช่องทาง</th><th>สถานะ</th><th class="text-right">จำนวนเงิน</th><th></th></tr></thead><tbody id="tb" class="divide-y"></tbody></table></div><div id="pgt"></div>`;rr()},
+
+settings(){main.innerHTML=`<div class="card p-5"><h3 class="font-bold mb-3">ตั้งค่าระบบ</h3><div class="grid md:grid-cols-3 gap-3">${F('ส่วนลดลูกค้าใหม่ (%)',`<input id="cn" type="number" min="0" max="100" class="inp" value="${S.cfg.nd}">`)}${F('ส่วนลดลูกค้าเก่า (%)',`<input id="cr" type="number" min="0" max="100" class="inp" value="${S.cfg.rd}">`)}${F('ชื่อบัญชีรับเงิน',`<input id="ca" class="inp" value="${esc(S.cfg.acct)}">`)}</div><button class="btn mt-3" onclick="saveCfg()">บันทึกการตั้งค่า</button></div>
+ <div class="card p-5"><div class="flex justify-between items-center mb-3"><h3 class="font-bold">จัดการพนักงาน</h3><button class="btn" onclick="staffForm()"><i class="fa-solid fa-plus"></i> เพิ่มพนักงาน</button></div><div class="tw"><table class="w-full text-left text-sm"><thead class="bg-gray-50"><tr><th>Username</th><th>ชื่อ</th><th>สิทธิ์</th><th class="text-center">จัดการ</th></tr></thead><tbody class="divide-y">${S.staff.map(s=>`<tr><td>${esc(s.u)}</td><td>${esc(s.name)}</td><td>${s.role}</td><td class="text-center space-x-1"><button class="btn2" onclick="staffForm('${esc(s.u)}')">แก้ไข</button><button class="btn2 text-red-600" onclick="delStaff('${esc(s.u)}')">ลบ</button></td></tr>`).join('')}</tbody></table></div><p class="text-xs text-gray-500 mt-2">Admin: ทุกเมนู · Staff: สมาชิก เช็คอิน และอนุมัติสลิป (ลบสมาชิก/จัดการแพ็กเกจ/ตั้งค่าไม่ได้)</p></div>
+ <div class="card p-5"><h3 class="font-bold mb-2">สำรอง / กู้คืนข้อมูล</h3><div class="flex flex-wrap gap-2"><button class="btn" onclick="backup()"><i class="fa-solid fa-download"></i> ดาวน์โหลด Backup (JSON)</button><label class="btn2 cursor-pointer py-2">กู้คืนจากไฟล์<input type="file" accept=".json" class="hd" onchange="restore(this)"></label></div></div>`}
+};
+const main=$('main');
+
+// ----- members -----
+function rm(){const q=($('q')?.value||'').toLowerCase(),a=S.members.filter(m=>(m.name+m.id+m.phone).toLowerCase().includes(q));
+ $('mb').innerHTML=pageOf(a,'m').map(m=>{const[s,c]=st(m);return`<tr class="hover:bg-gray-50"><td>${esc(m.id)}</td><td>${esc(m.name)}</td><td>${esc(m.phone)}</td><td>${esc(m.pkg||'-')}</td><td>${m.expiry?fD(m.expiry):'-'}</td><td>${badge(s,c)}</td><td class="text-center whitespace-nowrap space-x-1"><button class="btn2" onclick="renew('${m.id}')">ต่ออายุ</button><button class="btn2" title="ประวัติ" onclick="hist('${m.id}')"><i class="fa-solid fa-clock-rotate-left"></i></button><button class="btn2" title="แก้ไข" onclick="memForm('${m.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn2" title="ระงับ/เปิดใช้งาน" onclick="susp('${m.id}')"><i class="fa-solid fa-${m.status==='suspended'?'unlock':'ban'}"></i></button>${adm()?`<button class="btn2 text-red-600" onclick="delMem('${m.id}')"><i class="fa-solid fa-trash"></i></button>`:''}</td></tr>`}).join('')||empty(7);
+ $('pgm').innerHTML=pager(a.length,'m','rm')}
+function memForm(id){const m=S.members.find(x=>x.id===id),e=!!m;
+ modal(e?'แก้ไขสมาชิก':`เพิ่มสมาชิกใหม่ (ลด ${S.cfg.nd}%)`,F('รหัส',`<input class="inp" disabled value="${e?m.id:nid(S.members,'M',3)}">`)+F('ชื่อ-นามสกุล',`<input id="fn" class="inp" value="${esc(m?.name)}">`)+F('เบอร์โทร (10 หลัก)',`<input id="fp" maxlength="10" class="inp" value="${esc(m?.phone)}">`)+F(e?'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)':'รหัสผ่าน',`<input id="fw" type="password" class="inp">`)+(e?'':F('แพ็กเกจ',`<select id="fk" class="inp"><option value="">-- ยังไม่เลือก --</option>${S.packages.map(p=>`<option value="${p.id}">${esc(p.name)} (${fM(p.price)})</option>`).join('')}</select>`)),cancelB+`<button class="btn" onclick="saveMem('${id||''}')">${e?'บันทึก':'ดำเนินการต่อ'}</button>`)}
+function saveMem(id){const n=$('fn').value.trim(),p=$('fp').value.trim(),w=$('fw').value;
+ if(id){if(!addMember(n,p,w,id))return;const m=S.members.find(x=>x.id===id);m.name=n;m.phone=p;if(w)m.p=H(w);closeM();commit()}
+ else{const m=addMember(n,p,w);if(!m)return;save();const k=$('fk').value;closeM();k?openPay(m.id,k):refresh()}}
+function susp(id){const m=S.members.find(x=>x.id===id);m.status=m.status==='suspended'?'active':'suspended';commit()}
+function delMem(id){if(!adm()||!confirm('ลบสมาชิก '+id+' ถาวร? (แนะนำให้ใช้ปุ่มระงับแทน)'))return;S.members=S.members.filter(m=>m.id!==id);commit()}
+function hist(id){const m=S.members.find(x=>x.id===id);
+ modal('ประวัติ: '+esc(m.name),`<h4 class="font-bold text-sm">การชำระเงิน</h4><div class="text-sm space-y-1">${S.tx.filter(t=>t.mid===id).map(t=>`<div class="flex justify-between border-b pb-1"><span>${fT(t.t)} ${esc(t.pkg)}</span><span>${fM(t.price)} ${badge(...TS[t.status])}</span></div>`).join('')||'<p class="text-gray-400">ไม่มี</p>'}</div><h4 class="font-bold text-sm">การเข้าใช้ (ล่าสุด 15)</h4><div class="text-sm">${S.checkins.filter(c=>c.id===id).slice(0,15).map(c=>`<div class="border-b py-0.5">${fD(c.d)} ${c.tm}</div>`).join('')||'<p class="text-gray-400">ไม่มี</p>'}</div>`)}
+function renew(id){const m=S.members.find(x=>x.id===id);
+ modal('ต่ออายุ: '+esc(m.name),`<p class="text-sm bg-amber-50 border border-amber-200 rounded p-2">ส่วนลดสำหรับสมาชิกรายนี้: <b>${rate(m)}%</b></p>`+F('เลือกแพ็กเกจ',`<select id="rk2" class="inp">${S.packages.map(p=>`<option value="${p.id}">${esc(p.name)} (${fM(p.price)})</option>`).join('')}</select>`),cancelB+`<button class="btn" onclick="openPay('${id}',$('rk2').value)">คำนวณยอดชำระ</button>`)}
+
+// ----- checkin -----
+function rcl(){$('cl').innerHTML=S.checkins.filter(c=>c.d===today()).slice(0,20).map(c=>`<tr><td>${c.tm}</td><td>${esc(c.id)}</td><td>${esc(c.name)}</td></tr>`).join('')||empty(3)}
+function doCI(){const v=$('ci').value.trim(),r=$('cir');if(!v)return;const m=S.members.find(x=>x.id.toLowerCase()===v.toLowerCase()||x.phone===v);
+ const o=(c,h)=>r.innerHTML=`<div class="p-3 rounded text-sm bg-${c}-50 text-${c}-800">${h}</div>`;
+ if(!m)o('red','ไม่พบข้อมูลสมาชิก');
+ else if(m.status==='suspended')o('red','สมาชิกถูกระงับการใช้งาน');
+ else if(expired(m.expiry))o('yellow',`แพ็กเกจหมดอายุ/ยังไม่มีแพ็กเกจ <button class="btn ml-2" onclick="renew('${m.id}')">ต่ออายุ</button>`);
+ else if(S.checkins.some(c=>c.id===m.id&&c.d===today()))o('amber',`${esc(m.name)} เช็คอินวันนี้ไปแล้ว`);
+ else{S.checkins.unshift({d:today(),tm:new Date().toLocaleTimeString('th-TH'),id:m.id,name:m.name});save();o('green',`เช็คอินสำเร็จ: <b>${esc(m.name)}</b> (เหลือ ${left(m.expiry)} วัน)`);rcl()}
+ $('ci').value=''}
+
+// ----- packages -----
+function pkgForm(id){const p=S.packages.find(x=>x.id===id),e=!!p;
+ modal(e?'แก้ไขแพ็กเกจ':'เพิ่มแพ็กเกจ',F('ชื่อ',`<input id="pn" class="inp" value="${esc(p?.name)}">`)+F('ราคา (บาท)',`<input id="pp" type="number" min="1" class="inp" value="${p?.price||''}">`)+F('จำนวนวัน',`<input id="pd" type="number" min="1" class="inp" value="${p?.duration||30}">`),cancelB+`<button class="btn" onclick="savePkg('${id||''}')">บันทึก</button>`)}
+function savePkg(id){const name=$('pn').value.trim(),price=+$('pp').value,duration=+$('pd').value;
+ if(!name||price<=0||duration<=0)return alert('กรอกข้อมูลให้ถูกต้อง');
+ if(S.packages.some(p=>p.name===name&&p.id!==id))return alert('ชื่อแพ็กเกจซ้ำ');
+ if(id){const p=S.packages.find(x=>x.id===id);S.members.forEach(m=>{if(m.pkg===p.name)m.pkg=name});Object.assign(p,{name,price,duration})}
+ else S.packages.push({id:nid(S.packages,'P',3),name,price,duration});
+ closeM();commit()}
+function delPkg(id){const p=S.packages.find(x=>x.id===id),n=S.members.filter(m=>m.pkg===p.name&&m.expiry&&!expired(m.expiry)).length;
+ if(n)return alert(`ลบไม่ได้: มีสมาชิก ${n} คนกำลังใช้แพ็กเกจนี้อยู่`);if(!confirm('ลบแพ็กเกจ '+p.name+'?'))return;S.packages=S.packages.filter(x=>x.id!==id);commit()}
+
+// ----- payment -----
+function openPay(mid,pid){const m=S.members.find(x=>x.id===mid),p=S.packages.find(x=>x.id===pid);if(!m||!p)return;
+ const r=rate(m),d=p.price*r/100,f=p.price-d,isM=U?.t!=='staff';PAY={mid,pid,f,name:m.name,pkg:p.name,days:p.duration};
+ modal('ชำระเงินค่าแพ็กเกจ',`<div class="bg-gray-50 p-4 rounded border text-sm space-y-1"><p><b>สมาชิก:</b> ${esc(m.name)}</p><p><b>แพ็กเกจ:</b> ${esc(p.name)} (${p.duration} วัน)</p><p class="text-xs text-gray-500">ราคาปกติ ${fM(p.price)}</p><p class="text-xs text-green-600 font-semibold">ส่วนลด ${r}% (${r===S.cfg.nd?'ลูกค้าใหม่':'ลูกค้าเก่า'}): -${fM(d)}</p><p class="text-xl font-bold">ยอดสุทธิ ${fM(f)}</p></div>
+ ${isM?'':`<div class="grid grid-cols-2 gap-2 text-sm"><label class="border p-2 rounded"><input type="radio" name="pm" value="เงินสด" checked onclick="$('qr').classList.add('hd')"> เงินสด</label><label class="border p-2 rounded"><input type="radio" name="pm" value="โอน" onclick="$('qr').classList.remove('hd')"> โอน / QR</label></div>`}
+ <div id="qr" class="${isM?'':'hd'} text-center bg-gray-50 border rounded p-3 space-y-2"><img src="838938470_1090112667155855_5852447489981410677_n.jpg" onerror="this.style.display='none';$('qrm').classList.remove('hd')" class="h-36 mx-auto object-contain"><p id="qrm" class="hd text-xs text-red-500">ไม่พบไฟล์รูป QR (วางไฟล์ไว้โฟลเดอร์เดียวกับหน้านี้)</p><p class="text-xs font-bold">ชื่อบัญชี: ${esc(S.cfg.acct)}</p><div class="text-left"><label class="text-xs">แนบสลิป${isM?' (พนักงานจะตรวจสอบก่อนเริ่มนับวัน)':''}:</label><input type="file" id="slip" accept="image/*" class="w-full text-xs"></div></div>`,
+ cancelB+`<button class="btn bg-green-600" onclick="payOk()">ยืนยันการชำระเงิน</button>`)}
+const shrink=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,700/i.width),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.6))};i.onerror=()=>r('');i.src=URL.createObjectURL(f)});
+async function payOk(){const staff=U?.t==='staff',pm=document.querySelector('input[name=pm]:checked');let method='เงินสด',slip='';
+ if(!staff||pm?.value==='โอน'){method='โอน / QR';const f=$('slip').files[0];if(!f)return alert('กรุณาแนบสลิปการโอนเงิน');slip=await shrink(f);if(!slip)return alert('ไฟล์สลิปไม่ถูกต้อง')}
+ const t={id:nid(S.tx,'T',5),t:new Date().toISOString(),mid:PAY.mid,name:PAY.name,pkg:PAY.pkg,days:PAY.days,price:PAY.f,method,slip,status:staff?'paid':'pending'};
+ S.tx.unshift(t);if(staff)applyTx(t);save();closeM();
+ if(staff){refresh();if(confirm('บันทึกสำเร็จ พิมพ์ใบเสร็จหรือไม่?'))receipt(t.id)}
+ else if(U){alert('ส่งสลิปเรียบร้อย รอพนักงานตรวจสอบและอนุมัติ');refresh()}
+ else{alert('สมัครสำเร็จ! แพ็กเกจจะเริ่มใช้งานเมื่อพนักงานอนุมัติสลิป กรุณาเข้าสู่ระบบ');updBell()}}
+function applyTx(t){const m=S.members.find(x=>x.id===t.mid);if(!m)return;const b=!expired(m.expiry)?new Date(m.expiry+'T00:00:00'):new Date();b.setHours(0,0,0,0);b.setDate(b.getDate()+t.days);m.expiry=iso(b);m.pkg=t.pkg}
+function appr(id,ok){const t=S.tx.find(x=>x.id===id);if(!t||t.status!=='pending')return;t.status=ok?'paid':'rejected';if(ok)applyTx(t);commit()}
+function slipV(id){const t=S.tx.find(x=>x.id===id);modal('สลิป '+esc(t.name)+' · '+fM(t.price),`<img src="${t.slip}" class="max-h-96 mx-auto">`)}
+function receipt(id){const t=S.tx.find(x=>x.id===id),w=open('','_blank');if(!w)return alert('เบราว์เซอร์บล็อกหน้าต่างใหม่');
+ w.document.write(`<html><head><meta charset="utf-8"><title>ใบเสร็จ ${t.id}</title></head><body style="font-family:Sarabun,sans-serif;max-width:360px;margin:20px auto"><h2 style="text-align:center">Iron Factory Gym<br><small>ใบเสร็จรับเงิน</small></h2><hr><p>เลขที่: ${t.id}<br>วันที่: ${fT(t.t)}<br>สมาชิก: ${esc(t.name)}<br>แพ็กเกจ: ${esc(t.pkg)} (${t.days} วัน)<br>ช่องทาง: ${esc(t.method)}</p><h3 style="text-align:right">รวม ${fM(t.price)}</h3><p style="text-align:center">ขอบคุณที่ใช้บริการ</p><script>onload=()=>print()<\/script></body></html>`);w.document.close()}
+
+// ----- reports -----
+const rt=()=>S.tx.filter(t=>{const d=iso(new Date(t.t));return d>=RF.f&&d<=RF.t});
+function rr(){const a=rt(),paid=a.filter(t=>t.status==='paid'),sum=x=>x.reduce((s,t)=>s+t.price,0),cash=paid.filter(t=>t.method==='เงินสด');
+ $('sum').innerHTML=[['รายได้ในช่วงนี้',fM(sum(paid)),'text-green-700'],['จำนวนรายการ',paid.length,''],['เงินสด',fM(sum(cash)),''],['โอน / QR',fM(sum(paid)-sum(cash)),'']].map(x=>`<div class="card p-4"><p class="text-xs text-gray-500">${x[0]}</p><p class="text-xl font-bold ${x[2]}">${x[1]}</p></div>`).join('');
+ $('tb').innerHTML=pageOf(a,'t').map(t=>`<tr><td>${t.id}</td><td class="text-gray-500">${fT(t.t)}</td><td>${esc(t.name)}</td><td>${esc(t.pkg)}</td><td>${esc(t.method)}</td><td>${badge(...TS[t.status])}</td><td class="text-right font-bold">${fM(t.price)}</td><td>${t.status==='paid'?`<button class="btn2" onclick="receipt('${t.id}')"><i class="fa-solid fa-print"></i></button>`:''}</td></tr>`).join('')||empty(8);
+ $('pgt').innerHTML=pager(a.length,'t','rr')}
+function csv(){const r=[['เลขที่','วันที่','สมาชิก','แพ็กเกจ','ช่องทาง','จำนวนเงิน','สถานะ'],...rt().map(t=>[t.id,fT(t.t),t.name,t.pkg,t.method,t.price,TS[t.status][0]])];
+ dload(`report-${RF.f}_${RF.t}.csv`,'\ufeff'+r.map(a=>a.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv')}
+
+// ----- settings -----
+function saveCfg(){const nd=+$('cn').value,rd=+$('cr').value;if(!(nd>=0&&nd<=100&&rd>=0&&rd<=100))return alert('ส่วนลดต้องอยู่ระหว่าง 0-100');S.cfg={nd,rd,acct:$('ca').value.trim()};commit();alert('บันทึกแล้ว')}
+function staffForm(u){const s=S.staff.find(x=>x.u===u),e=!!s;
+ modal(e?'แก้ไขพนักงาน':'เพิ่มพนักงาน',F('Username',`<input id="su" class="inp" ${e?'disabled':''} value="${esc(u)}">`)+F(e?'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)':'รหัสผ่าน',`<input id="sw" type="password" class="inp">`)+F('ชื่อ-นามสกุล',`<input id="sn" class="inp" value="${esc(s?.name)}">`)+F('สิทธิ์',`<select id="sr" class="inp"><option>Staff</option><option ${s?.role==='Admin'?'selected':''}>Admin</option></select>`),cancelB+`<button class="btn" onclick="saveStaff('${esc(u||'')}')">บันทึก</button>`)}
+function saveStaff(u){const un=$('su').value.trim(),w=$('sw').value,name=$('sn').value.trim(),role=$('sr').value;
+ if(!un||!name||(!u&&w.length<4))return alert('กรอกข้อมูลให้ครบ (รหัสผ่านอย่างน้อย 4 ตัว)');
+ if(u){const s=S.staff.find(x=>x.u===u);if(s.role==='Admin'&&role!=='Admin'&&S.staff.filter(x=>x.role==='Admin').length<2)return alert('ต้องมี Admin อย่างน้อย 1 คน');s.name=name;s.role=role;if(w)s.p=H(w)}
+ else{if(S.staff.some(x=>x.u===un))return alert('Username ซ้ำ');S.staff.push({u:un,p:H(w),name,role})}
+ closeM();commit();if(U?.id===u)boot()}
+function delStaff(u){if(u===U.id)return alert('ลบบัญชีที่กำลังใช้งานอยู่ไม่ได้');const s=S.staff.find(x=>x.u===u);
+ if(s.role==='Admin'&&S.staff.filter(x=>x.role==='Admin').length<2)return alert('ต้องมี Admin อย่างน้อย 1 คน');if(!confirm('ลบพนักงาน '+u+'?'))return;S.staff=S.staff.filter(x=>x.u!==u);commit()}
+function backup(){dload(`iron-gym-backup-${today()}.json`,JSON.stringify(S),'application/json')}
+function restore(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);for(const k of Object.values(K))if(d[k]===undefined)throw 0;if(!confirm('ข้อมูลปัจจุบันจะถูกแทนที่ ดำเนินการต่อ?'))return;Object.assign(S,d);save();logout();alert('กู้คืนสำเร็จ กรุณาเข้าสู่ระบบอีกครั้ง')}catch{alert('ไฟล์ไม่ถูกต้อง')}};r.readAsText(f)}
+
+// ---------- MEMBER APP ----------
+function renderMember(){const m=S.members.find(x=>x.id===U.id);if(!m)return logout();
+ const ex=expired(m.expiry),dl=ex?0:left(m.expiry),warn=ex||dl<=3,pend=S.tx.some(t=>t.mid===m.id&&t.status==='pending'),r=rate(m),[s,c]=st(m);
+ $('mem').innerHTML=`<header class="bg-slate-900 text-white h-16 flex items-center justify-between px-4 md:px-8"><div class="flex items-center gap-3"><i class="fa-solid fa-dumbbell text-amber-500 text-xl"></i><span class="font-bold hidden md:block">IRON FACTORY GYM</span></div><div class="flex items-center gap-3"><span class="text-sm">สวัสดี, <b>${esc(m.name.split(' ')[0])}</b></span><button onclick="pwForm()" class="text-xs bg-slate-700 px-3 py-1.5 rounded-lg">เปลี่ยนรหัสผ่าน</button><button onclick="logout(true)" class="text-xs bg-red-500 px-3 py-1.5 rounded-lg">ออก</button></div></header>
+ <main class="max-w-4xl mx-auto p-4 md:p-8 space-y-5">
+ <div class="mhero rounded-2xl p-6 text-white"><p class="text-amber-400 text-sm"><i class="fa-solid fa-id-card"></i> รหัสสมาชิก: ${esc(m.id)}</p><h1 class="text-3xl font-bold">${esc(m.name)}</h1><p class="text-sm opacity-90"><i class="fa-solid fa-phone"></i> ${esc(m.phone)}</p></div>
+ ${pend?'<div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-xl text-sm text-blue-800">ส่งสลิปแล้ว กำลังรอพนักงานตรวจสอบ แพ็กเกจจะเริ่มนับเมื่ออนุมัติ</div>':''}
+ ${warn&&!pend&&m.status!=='suspended'?`<div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl text-sm text-amber-800"><b>${m.expiry?'แพ็กเกจหมดอายุหรือใกล้หมดอายุ':'ยังไม่มีแพ็กเกจ'}</b> เลือกแพ็กเกจด้านล่างเพื่อใช้บริการต่อ</div>`:''}
+ <div class="grid md:grid-cols-2 gap-5"><div class="card p-6"><div class="flex justify-between mb-3"><h3 class="font-bold">แพ็กเกจปัจจุบัน</h3>${badge(s,c)}</div><p class="text-3xl font-bold">${ex?'ไม่มีแพ็กเกจที่ใช้งาน':esc(m.pkg)}</p><p class="text-sm text-gray-500 mb-4">${m.expiry?'ใช้งานได้ถึง '+fD(m.expiry):'-'}</p>
+ ${warn&&!pend&&m.status!=='suspended'?`<label class="text-xs">เลือกแพ็กเกจ (ส่วนลด ${r}%):</label><div class="flex gap-2 mb-4"><select id="msel" class="inp">${S.packages.map(p=>`<option value="${p.id}">${esc(p.name)} (${fM(p.price)} → ${fM(p.price*(100-r)/100)})</option>`).join('')}</select><button class="btn bg-green-600 whitespace-nowrap" onclick="openPay('${m.id}',$('msel').value)">ซื้อแพ็กเกจ</button></div>`:''}
+ <div class="p-4 bg-gray-50 rounded-xl border text-center"><p class="text-sm text-gray-600">จำนวนวันคงเหลือ</p><h2 class="text-4xl font-black">${dl} <span class="text-lg text-gray-500">วัน</span></h2></div></div>
+ <div class="space-y-5"><div class="card p-6"><h3 class="font-bold mb-3">ประวัติการเข้ายิม</h3><div class="space-y-2 text-sm">${S.checkins.filter(c=>c.id===m.id).slice(0,5).map(c=>`<div class="border-b pb-1">${fD(c.d)} ${c.tm}</div>`).join('')||'<p class="text-gray-400 text-center">ยังไม่มีประวัติ</p>'}</div></div>
+ <div class="card p-6"><h3 class="font-bold mb-3">ประวัติการซื้อ</h3><div class="space-y-2 text-sm">${S.tx.filter(t=>t.mid===m.id).slice(0,5).map(t=>`<div class="flex justify-between border-b pb-1"><span>${esc(t.pkg)} · ${fD(iso(new Date(t.t)))}</span><span>${fM(t.price)} ${badge(...TS[t.status])}</span></div>`).join('')||'<p class="text-gray-400 text-center">ยังไม่มีรายการ</p>'}</div></div></div></div></main>`}
+function pwForm(){modal('เปลี่ยนรหัสผ่าน',F('รหัสผ่านเดิม','<input id="o1" type="password" class="inp">')+F('รหัสผ่านใหม่ (อย่างน้อย 4 ตัว)','<input id="o2" type="password" class="inp">'),cancelB+'<button class="btn" onclick="chPw()">บันทึก</button>')}
+function chPw(){const m=S.members.find(x=>x.id===U.id);if(m.p!==H($('o1').value))return alert('รหัสผ่านเดิมไม่ถูกต้อง');if($('o2').value.length<4)return alert('รหัสผ่านใหม่สั้นเกินไป');m.p=H($('o2').value);closeM();commit();alert('เปลี่ยนรหัสผ่านแล้ว')}
+
+setMode('member');if(U)boot();
+</script>
+</body>
+</html>
